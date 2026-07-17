@@ -10,3 +10,7 @@ Copy-ready shapes for the agent-identity controls in
 - **`cross-account-role-trust.json`** — an AWS IAM role trust policy done right: a specific
   principal (no wildcard), an `ExternalId` condition to defeat the confused-deputy problem,
   and short session duration. The delegation primitive from Part 10, at the cloud layer.
+- **`credential-broker.md`** — the credential-boundary wiring: the agent points at a broker
+  and holds **no** provider secrets; the broker keeps them behind its runtime boundary and
+  returns only metadata, scoped actions, and results. Part 10's "kill secrets sprawl", made
+  structural.
