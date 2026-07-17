@@ -37,6 +37,7 @@ Security engineers, platform / developer-experience teams, and CISOs standing up
 
 - Vendor and product names are **examples, not endorsements**. Agent controls change quickly — verify against the vendor docs cited on each page before relying on a specific setting.
 - This is a general playbook; nothing here is specific to any one organization.
+- Every action-oriented part ends with a **security engineer's playbook** — a scannable "what to do" checklist. Governance (Part 12) also carries an engineer-facing "operationalize the governance" checklist alongside the CISO material.
 - Living document. See [`log.md`](log.md) for history.
 
 ## Roadmap
