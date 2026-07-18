@@ -1,8 +1,8 @@
 ---
 title: "Part 7 — Agentic Workflow Platforms (n8n, Gemini Enterprise)"
-summary: "Securing platforms where non-developers build agentic workflows wired into enterprise data — automation platforms like n8n and hyperscaler agent platforms like Google Gemini Enterprise; the SaaS-vs-self-hosted decision and the connector layer."
+summary: "Securing platforms where non-developers build agentic workflows wired into enterprise data — automation platforms like n8n and hyperscaler agent platforms like Google Gemini Enterprise; the SaaS-vs-self-hosted decision, the connector layer, and governing the trigger point (a Jira comment or Slack message is an indirect-injection path even when the webhook is authenticated)."
 part: 7
-updated: 2026-07-17
+updated: 2026-07-19
 ---
 
 # Part 7 — Agentic Workflow Platforms (n8n, Gemini Enterprise)
@@ -24,6 +24,7 @@ The general risks, independent of where it runs:
 - **Arbitrary code.** The Code node runs untrusted JavaScript/Python inside the instance. Treat it as remote code execution and restrict who can author it.
 - **Community nodes are a supply chain.** Installing a community node pulls unverified npm code that has full access to the host and to the data in your workflows. Disable it unless vetted (`N8N_COMMUNITY_PACKAGES_ENABLED=false`), and treat any allowed node like a dependency you review.
 - **Webhooks are a public trigger surface.** Self-hosted instances expose endpoints external services call; authenticate them and treat inbound payloads as untrusted input to an agentic workflow.
+- **The trigger *source* is an injection vector, and authenticating the trigger does not fix that.** Authenticating a webhook stops *forged* calls — it says nothing about the *content* the call carries. A workflow fired by a Jira comment, a Slack message, an inbound email, or a public form runs on text written by whoever could post there, which is often any low-trust or external actor. The Jira/Slack integration is legitimately authenticated; the payload is hostile. That is indirect prompt injection ([Part 1](part-1-risk-surface-and-control-model.md)) delivered straight into an agent that is wired to your connectors — a comment on a ticket becomes an instruction the workflow acts on with the platform's access. Do not trigger an agentic workflow off a surface untrusted actors can write to without screening that payload as untrusted input before it reaches the LLM and scoping what the triggered workflow may do.
 - **The credential store and encryption key.** n8n encrypts stored credentials with `N8N_ENCRYPTION_KEY`; lose it and the store is unrecoverable, leak it and the store is wide open. Protect and rotate it like any root secret.
 
 ### Cloud vs Enterprise / Self-Hosted: Where the Boundary Actually Is
@@ -61,7 +62,7 @@ Three controls matter most before an agentic workflow is published and wired to 
 - **Choose hosting by data sensitivity, and know the tier is the real gate.** Sensitive/regulated data → self-hosted Enterprise (n8n) or a locked-down project with VPC-SC + CMEK + private connectivity (Gemini). Don't assume "on-prem" or "our cloud project" gives you SSO, RBAC, and SIEM streaming — those are edition/config features you must switch on.
 - **Kill arbitrary code where you can.** Disable code and community nodes unless a specific one is vetted; treat every code/tool node as RCE and restrict authorship to reviewed users.
 - **Least-privilege the connector layer, with exact identity mapping.** Each connector gets the narrowest scope; the agent must never see more than the user who invoked it. Allowlist which connectors and tools an agent may use.
-- **Authenticate every trigger; treat inbound data as untrusted.** Webhooks and inbound events are the injection path into an agentic workflow — require auth and validate.
+- **Govern the trigger point, not just its authentication.** Authenticating a trigger stops forged calls; it does not make the payload trustworthy. Do not fire an agentic workflow from a surface any low-trust actor can write to — a Jira comment, a Slack message, inbound email, a public form — without screening that payload for injection before it reaches the LLM and scoping what the workflow may do, so an injected instruction cannot reach an exfil-capable connector. A legitimately-authenticated Jira/Slack integration faithfully delivers attacker-authored text; the trigger content is untrusted input ([Part 1](part-1-risk-surface-and-control-model.md)).
 - **Protect the credential concentration.** The platform's credential store is a honeypot: guard and rotate the encryption key (n8n), prefer CMEK plus a real secret manager (Gemini), never inline secrets in a node or prompt.
 - **Inventory, govern, and stream to your SIEM.** Register every workflow/agent, forward audit and agent-action logs to your SIEM (n8n Enterprise log streaming; Gemini Agent Threat Detection), and alert on unexpected external connections — the exfil signal.
 - **Constrain egress.** An agentic workflow that can call any HTTP endpoint is an exfiltration path; allowlist destinations (VPC-SC / network policy), the same lever as [Part 3](part-3-architecture-gateways-and-remote-defense.md) and [Part 4](part-4-beyond-the-hyperscalers.md).
