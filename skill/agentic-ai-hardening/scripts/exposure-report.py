@@ -601,9 +601,21 @@ def load_pulse(replay, offline, now, state, deadline=None):
         replay, offline, LARGE_CAP, now, state)
     if data is None:
         return []
-    items = data.get("items") if isinstance(data, dict) else data
+    # The feed's own key is `findings`; `items` is accepted as a fallback so a
+    # future rename doesn't silently disable enrichment. (This guard originally
+    # only knew `items`, so enrichment never once worked against the live feed
+    # while every fixture-based test passed — verified by a live run.)
+    items = None
+    if isinstance(data, dict):
+        for key in ("findings", "items"):
+            if isinstance(data.get(key), list):
+                items = data[key]
+                break
+    elif isinstance(data, list):
+        items = data
     if not isinstance(items, list):
-        state.set("pulse", "skipped", "schema mismatch: no item list")
+        state.set("pulse", "skipped",
+                  "schema mismatch: no findings/items list")
         return []
     out = []
     for item in items:
@@ -612,14 +624,16 @@ def load_pulse(replay, offline, now, state, deadline=None):
             return []
         # Scan only the fields that carry CVE ids — re-serializing the whole
         # (up to 30MB) feed with json.dumps just to regex it is wasted work.
-        haystack = " ".join(str(item.get(k, "")) for k in
-                            ("cve", "cves", "title", "summary", "description",
-                             "url", "link"))
+        # `cve_ids` is the live feed's own field; the rest are fallbacks.
+        haystack = " ".join(
+            str(item.get(k, "")) for k in
+            ("cve_ids", "cve", "cves", "title", "summary", "description",
+             "url", "link"))
         cves = set(CVE_RE.findall(haystack))
         if cves:
             out.append({"cves": sorted(cves),
                         "title": item.get("title", ""),
-                        "url": item.get("url", item.get("link", ""))})
+                        "url": item.get("link", item.get("url", ""))})
     return out
 
 
