@@ -12,7 +12,7 @@ This repository is an **LLM Wiki** (per Andrej Karpathy's pattern): a compoundin
 - `glossary.md` — one-line definitions of the terms used across the parts, each pointing to the part that defines it. Definitions live here; `index.md`'s "Key concepts" is only a compact concept→part pointer.
 - `scripts/lint.sh` — the wiki's test suite: fails on a broken relative link or an orphan part. CI runs it on every PR via `.github/workflows/lint.yml`.
 - `templates/` — copy-ready controls (config baselines, the PreToolUse hook, Sigma+SPL detections, identity/workflow examples), each mapped to its part. Examples to adapt, not drop-in.
-- `skill/` — the guide packaged as a portable Agent Skill (`skill/agentic-ai-hardening/SKILL.md`) that runs on Claude Code / Codex CLI / Cursor: discover → assess → report → opt-in harden. The one script it *executes* (discovery) is bundled at `skill/agentic-ai-hardening/scripts/inventory-agents.sh` — a verbatim copy of `templates/discovery/inventory-agents.sh` that `scripts/lint.sh` enforces stays identical (so the skill never fetches-and-runs remote code); the *controls* it writes are fetched from their canonical raw URLs, preview-then-write. When a control or the maturity model changes, keep the skill's Control Catalog and checklist in sync.
+- `skill/` — the guide packaged as a portable Agent Skill (`skill/agentic-ai-hardening/SKILL.md`) that runs on Claude Code / Codex CLI / Cursor: discover → assess → report → opt-in harden. **Executed-script policy:** everything the skill *executes* is bundled inside it as a verbatim copy of a canonical `templates/` original, and `scripts/lint.sh` + CI enforce the copies stay byte-identical — so the skill never fetches-and-runs remote code. The bundled set: `inventory-agents.sh` (discovery), `exposure-report.py` (advisory matching), `agentic-watchlist.json` (data whose probe commands can run under `--probe-binaries`, so it is policed like code), and `scorecard.sh` (rendering; canonical at `templates/assessment/`). The *controls* the skill writes are fetched from their canonical raw URLs, preview-then-write. Front-door prerequisites, stated honestly: `jq` (hard-required by `assess.sh` and `scorecard.sh`) and `python3` (exposure matching; skipped with a loud note when absent). When a control or the maturity model changes, keep the skill's Control Catalog and checklist in sync.
 
 ## Conventions
 
@@ -30,3 +30,22 @@ This repository is an **LLM Wiki** (per Andrej Karpathy's pattern): a compoundin
 ## Scope note
 
 Vendor and product specifics (Claude Code, Claude Cowork, Codex, Cursor, Coder, GPU-first neoclouds, sandbox-native providers) are named as concrete examples. Nothing here is organization-specific; it is a general playbook.
+
+## Skill routing
+
+When the user's request matches an available skill, invoke it via the Skill tool. When in doubt, invoke the skill.
+
+Key routing rules:
+- Product ideas/brainstorming → invoke /office-hours
+- Strategy/scope → invoke /plan-ceo-review
+- Architecture → invoke /plan-eng-review
+- Design system/plan review → invoke /design-consultation or /plan-design-review
+- Full review pipeline → invoke /autoplan
+- Bugs/errors → invoke /investigate
+- QA/testing site behavior → invoke /qa or /qa-only
+- Code review/diff check → invoke /review
+- Visual polish → invoke /design-review
+- Ship/deploy/PR → invoke /ship or /land-and-deploy
+- Save progress → invoke /context-save
+- Resume context → invoke /context-restore
+- Author a backlog-ready spec/issue → invoke /spec

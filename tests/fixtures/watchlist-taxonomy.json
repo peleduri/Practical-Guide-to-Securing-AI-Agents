@@ -1,0 +1,29 @@
+{
+  "_meta": { "schema_version": 1, "description": "TEST FIXTURE - one product per honest-taxonomy state" },
+  "products": {
+    "covered-versioned": {
+      "name": "CoveredVersioned",
+      "aliases": ["coveredversioned"],
+      "osv_queries": [ { "ecosystem": "PyPI", "name": "covered-versioned" } ],
+      "inventory_ids": ["covered-versioned"],
+      "version_sources": [ { "type": "clone_package_json", "roots": ["tests/fixtures/ollama-install"] } ],
+      "guide": { "part": "wiki/part-1-risk-surface-and-control-model.md", "template": null }
+    },
+    "uncovered-versioned": {
+      "name": "UncoveredVersioned",
+      "aliases": ["uncoveredversioned"],
+      "osv_queries": [],
+      "inventory_ids": ["uncovered-versioned"],
+      "version_sources": [ { "type": "clone_package_json", "roots": ["tests/fixtures/ollama-install-patched"] } ],
+      "guide": { "part": "wiki/part-1-risk-surface-and-control-model.md", "template": null }
+    },
+    "present-no-version": {
+      "name": "PresentNoVersion",
+      "aliases": ["presentnoversion"],
+      "osv_queries": [],
+      "inventory_ids": ["present-no-version"],
+      "version_sources": [],
+      "guide": { "part": "wiki/part-1-risk-surface-and-control-model.md", "template": null }
+    }
+  }
+}

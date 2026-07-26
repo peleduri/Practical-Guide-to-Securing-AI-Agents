@@ -1,0 +1,92 @@
+{
+  "_meta": {
+    "schema_version": 1,
+    "description": "Curated watchlist of agentic-AI-stack products for exposure matching (exposure-report.py). Per product: canonical name, aliases as they appear in advisories, OSV query coordinates (empty array = OSV has no data for this product -> report carries a 'limited coverage' note), read-only version sources per install channel, and the guide part / control template that mitigates the product's exposure class.",
+    "rules": [
+      "version_sources are READ-ONLY metadata reads (directory names, plists, dist-info, package.json). The scanner never executes a target binary unless the user passes --probe-binaries; probe_binary entries are inert without that flag.",
+      "osv_queries carry {ecosystem, name} exactly as OSV's querybatch API requires; the installed version is sent IN the query so OSV evaluates affected ranges server-side.",
+      "This file is executed-adjacent data (its probe commands can run under an explicit flag), so it falls under the executed-script policy: vendored in the skill, lint-enforced byte-identical to this canonical copy, reviewed like code.",
+      "Growth cadence: ~5 products/week toward ~30. Add aliases from real advisory texts, not guesses."
+    ]
+  },
+  "products": {
+    "ollama": {
+      "name": "Ollama",
+      "aliases": ["ollama", "ollama/ollama", "github.com/ollama/ollama", "Ollama Desktop"],
+      "osv_queries": [
+        { "ecosystem": "Go", "name": "github.com/ollama/ollama" }
+      ],
+      "inventory_ids": ["ollama"],
+      "version_sources": [
+        { "type": "brew_cellar", "paths": ["/opt/homebrew/Cellar/ollama", "/usr/local/Cellar/ollama"] },
+        { "type": "macos_app_plist", "paths": ["/Applications/Ollama.app/Contents/Info.plist"] },
+        { "type": "probe_binary", "command": ["ollama", "--version"], "version_pattern": "([0-9]+\\.[0-9]+\\.[0-9]+)" }
+      ],
+      "guide": {
+        "part": "wiki/part-11-local-open-source-models.md",
+        "template": "templates/detections/local-inference-endpoint.yml"
+      }
+    },
+    "cursor": {
+      "name": "Cursor",
+      "aliases": ["cursor", "Cursor IDE", "Cursor AI Code Editor", "getcursor/cursor"],
+      "osv_queries": [],
+      "inventory_ids": ["cursor", "cursor-agent"],
+      "version_sources": [
+        { "type": "macos_app_plist", "paths": ["/Applications/Cursor.app/Contents/Info.plist"] },
+        { "type": "brew_cellar", "paths": ["/opt/homebrew/Caskroom/cursor"] }
+      ],
+      "guide": {
+        "part": "wiki/part-2-endpoint-hardening-and-policy-playbook.md",
+        "template": "templates/cursor/README.md"
+      }
+    },
+    "claude-code": {
+      "name": "Claude Code",
+      "aliases": ["claude-code", "@anthropic-ai/claude-code", "Claude Code CLI", "claude"],
+      "osv_queries": [
+        { "ecosystem": "npm", "name": "@anthropic-ai/claude-code" }
+      ],
+      "inventory_ids": ["claude", "claude-code"],
+      "version_sources": [
+        { "type": "npm_global_package_json", "package": "@anthropic-ai/claude-code",
+          "roots": ["/opt/homebrew/lib/node_modules", "/usr/local/lib/node_modules", "~/.nvm/versions/node/*/lib/node_modules", "~/.local/share/claude/node_modules"] },
+        { "type": "brew_cellar", "paths": ["/opt/homebrew/Cellar/claude-code", "/usr/local/Cellar/claude-code"] }
+      ],
+      "guide": {
+        "part": "wiki/part-2-endpoint-hardening-and-policy-playbook.md",
+        "template": "templates/claude-code/managed-settings.json"
+      }
+    },
+    "litellm": {
+      "name": "LiteLLM",
+      "aliases": ["litellm", "LiteLLM Proxy", "BerriAI/litellm"],
+      "osv_queries": [
+        { "ecosystem": "PyPI", "name": "litellm" }
+      ],
+      "inventory_ids": ["litellm"],
+      "version_sources": [
+        { "type": "pip_dist_info", "package": "litellm",
+          "roots": ["/opt/homebrew/lib/python*/site-packages", "/usr/local/lib/python*/site-packages", "~/.local/lib/python*/site-packages", "~/.local/pipx/venvs/litellm/lib/python*/site-packages"] }
+      ],
+      "guide": {
+        "part": "wiki/part-7-agentic-workflow-platforms.md",
+        "template": null
+      }
+    },
+    "librechat": {
+      "name": "LibreChat",
+      "aliases": ["librechat", "LibreChat", "danny-avila/LibreChat"],
+      "osv_queries": [],
+      "inventory_ids": ["librechat"],
+      "version_sources": [
+        { "type": "clone_package_json", "package": "librechat",
+          "roots": ["~/src/LibreChat", "~/code/LibreChat", "~/work/LibreChat", "~/repos/LibreChat", "~/projects/LibreChat", "~/dev/LibreChat", "~/LibreChat"] }
+      ],
+      "guide": {
+        "part": "wiki/part-7-agentic-workflow-platforms.md",
+        "template": null
+      }
+    }
+  }
+}

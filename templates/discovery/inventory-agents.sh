@@ -17,23 +17,75 @@
 #   {"host":"...","user":"...","kind":"agent|mcp_server|local_model|skill|command|subagent|plugin|hook|baseline","name":"...","detail":"...","source":"<path>"}
 # Pipe to your SIEM / data lake and dedupe by (host,user,kind,name).
 #
+# --json mode (for machine consumers like exposure-report.py): each line additionally
+# carries "product" (stable canonical ID matching agentic-watchlist.json keys, empty when
+# unmapped) and "channel" (install channel inferred from the source path: brew|app|npm|
+# pip|config|path). Default output is unchanged for existing SIEM pipelines.
+#
 # Requires: bash, and `jq` for the MCP-config parsing (degrades gracefully without it).
 set -uo pipefail
 
 HOST="$(hostname 2>/dev/null || echo unknown)"
 USER_NAME="${USER:-$(id -un 2>/dev/null || echo unknown)}"
 HAVE_JQ=0; command -v jq >/dev/null 2>&1 && HAVE_JQ=1
+JSON_MODE=0; [ "${1:-}" = "--json" ] && JSON_MODE=1
+
+# Canonical product ID for correlation with agentic-watchlist.json. Keep this map in
+# sync with the watchlist's inventory_ids as products are added (~5/week cadence).
+product_id() { # name -> stable product ID (or empty)
+  case "$1" in
+    ollama)                    echo "ollama" ;;
+    claude|claude-code)        echo "claude-code" ;;
+    cursor|cursor-agent)       echo "cursor" ;;
+    litellm)                   echo "litellm" ;;
+    librechat)                 echo "librechat" ;;
+    *)                         echo "" ;;
+  esac
+}
+
+install_channel() { # source path -> channel
+  case "$1" in
+    /opt/homebrew/*|/usr/local/Cellar/*|/usr/local/Caskroom/*) echo "brew" ;;
+    /Applications/*)            echo "app" ;;
+    *node_modules*)             echo "npm" ;;
+    *site-packages*|*dist-info*) echo "pip" ;;
+    "$HOME"/.*)                 echo "config" ;;
+    *)                          echo "path" ;;
+  esac
+}
+
+# JSON string escaping. Names come from MCP config keys and sources from
+# filesystem paths — both third-party-writable — so an unescaped '"' or '\'
+# produces an invalid JSONL line that a consumer silently drops (a blind spot
+# in the very inventory the exposure scan joins against). Escape backslash and
+# quote, and strip control characters.
+json_escape() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  printf '%s' "$s" | tr -d '\000-\037'
+}
 
 emit() { # kind name detail source
-  printf '{"host":"%s","user":"%s","kind":"%s","name":"%s","detail":"%s","source":"%s"}\n' \
-    "$HOST" "$USER_NAME" "$1" "$2" "${3//\"/\'}" "$4"
+  local kind name detail source
+  kind="$(json_escape "$1")"; name="$(json_escape "$2")"
+  detail="$(json_escape "$3")"; source="$(json_escape "$4")"
+  if [ "$JSON_MODE" -eq 1 ]; then
+    printf '{"host":"%s","user":"%s","kind":"%s","name":"%s","product":"%s","channel":"%s","detail":"%s","source":"%s"}\n' \
+      "$(json_escape "$HOST")" "$(json_escape "$USER_NAME")" "$kind" "$name" \
+      "$(product_id "$2")" "$(install_channel "$4")" "$detail" "$source"
+  else
+    printf '{"host":"%s","user":"%s","kind":"%s","name":"%s","detail":"%s","source":"%s"}\n' \
+      "$(json_escape "$HOST")" "$(json_escape "$USER_NAME")" "$kind" "$name" \
+      "$detail" "$source"
+  fi
 }
 
 # --- 1. installed agent CLIs / runtimes on PATH -----------------------------
 # Extend this list; treat anything here that is NOT on your sanctioned allowlist
 # (start-here.md control #3) as a finding to review.
 for bin in claude cursor cursor-agent codex opencode aider goose cline \
-           openclaw nanoclaw \
+           openclaw nanoclaw litellm \
            ollama lms lm-studio jan gpt4all; do
   p="$(command -v "$bin" 2>/dev/null || true)"
   [ -n "$p" ] && emit agent "$bin" "on PATH" "$p"

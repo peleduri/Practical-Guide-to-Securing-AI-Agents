@@ -59,5 +59,13 @@ jobs:
           out=$(bash skill/agentic-ai-hardening/scripts/scorecard.sh examples/posture.json)
           printf '%s' "$out" | grep -q 'agent%20security-' || { echo "no maturity badge rendered"; exit 1; }
           printf '%s' "$out" | grep -q 'Maturity:'        || { echo "no maturity rendered"; exit 1; }
-      - name: The two discovery copies must stay identical
-        run: cmp templates/discovery/inventory-agents.sh skill/agentic-ai-hardening/scripts/inventory-agents.sh
+      - name: Every bundled skill copy must stay identical to its template
+        run: |
+          cmp templates/discovery/inventory-agents.sh  skill/agentic-ai-hardening/scripts/inventory-agents.sh
+          cmp templates/discovery/exposure-report.py   skill/agentic-ai-hardening/scripts/exposure-report.py
+          cmp templates/discovery/agentic-watchlist.json skill/agentic-ai-hardening/scripts/agentic-watchlist.json
+          cmp templates/assessment/scorecard.sh        skill/agentic-ai-hardening/scripts/scorecard.sh
+      # Exposure-report suite: unit tests + fixture E2E (all inputs replayed from
+      # tests/fixtures/ — no sockets opened) + the assess.sh regression test.
+      - name: Exposure-report tests (fixtures, deterministic)
+        run: bash scripts/test.sh

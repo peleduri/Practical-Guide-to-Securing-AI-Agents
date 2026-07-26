@@ -1,0 +1,10 @@
+{
+  "results": [
+    { "vulns": [ { "id": "CVE-2026-77777" } ] },
+    { "vulns": [ { "id": "CVE-2026-77777" } ] }
+  ],
+  "details": {
+    "CVE-2026-77777": { "id": "CVE-2026-77777", "aliases": [],
+      "summary": "Shared dependency flaw affecting both products" }
+  }
+}

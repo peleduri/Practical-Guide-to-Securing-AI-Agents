@@ -1,0 +1,8 @@
+{
+  "vulnerabilities": [
+    { "cveID": "CVE-2026-99999", "vendorProject": "Ollama", "product": "Ollama",
+      "shortDescription": "Ollama RCE exploited in the wild (fixture)", "dateAdded": "2026-06-20" },
+    { "cveID": "CVE-2026-11111", "vendorProject": "Cursor", "product": "Cursor IDE",
+      "shortDescription": "Cursor workspace trust bypass (fixture)", "dateAdded": "2026-05-01" }
+  ]
+}

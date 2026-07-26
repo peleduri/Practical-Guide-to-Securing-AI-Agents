@@ -79,6 +79,35 @@ settings file if present (`managed-settings.json` for Claude Code, the Codex
 equivalent), any registered hooks, and whether agent events reach a SIEM. Do not
 modify these.
 
+### Exposure check (bundled, read-only)
+
+Match the inventory against live advisory sources with the **bundled**
+`scripts/exposure-report.py` (stdlib Python; a verbatim copy of the guide's
+`templates/discovery/exposure-report.py`, kept identical by the repo's lint —
+same bundling rule as the discovery script). It sends each watched product's
+installed version to OSV.dev (which evaluates affected ranges server-side),
+cross-checks the CISA KEV catalog and the zero-day-pulse feed, and renders an
+honest report:
+
+    bash scripts/inventory-agents.sh --json > inventory.jsonl
+    python3 scripts/exposure-report.py --inventory inventory.jsonl --out .
+
+Read the rules it lives by before summarizing its output to the reader:
+
+- **Read-only**: versions come from package metadata; it never executes a target
+  binary unless the reader explicitly passes `--probe-binaries`.
+- **Honest labels**: a CISA-KEV name-match alone is `possible`, never `confirmed`
+  (KEV carries no version data — a patched install must not read as exploited).
+  "Actively exploited" appears only on KEV-corroborated, version-confirmed hits.
+  It never says "clean"; the strongest all-good statement is *"no matching
+  advisories in covered sources"*, and every report ends with a coverage section
+  saying what the scan cannot see. Relay those limits, don't soften them.
+- **Machine-scoped output**: like the inventory, `exposure-report.md` names local
+  products and versions — it stays local, and is not part of the shareable
+  scorecard.
+- Watchlist coverage lives in the bundled `scripts/agentic-watchlist.json`
+  (5 flagship products today, growing weekly).
+
 ## Step 2 — Assess against the first five controls + the maturity model
 
 For each control, decide **present / partial / missing** from what Step 1 found. These
@@ -210,6 +239,8 @@ Base: `https://raw.githubusercontent.com/peleduri/Practical-Guide-to-Securing-AI
 | Control | Maturity | Guide | Template path (under base) |
 |---------|----------|-------|-----------------------------|
 | Discovery inventory | crawl | Part 1 | `discovery/inventory-agents.sh` |
+| Exposure report (inventory × OSV/KEV/pulse) | crawl | Part 1 / Part 11 | `discovery/exposure-report.py` |
+| Agentic-stack watchlist (exposure matching data) | crawl | Part 1 | `discovery/agentic-watchlist.json` |
 | Managed-settings baseline (Claude Code) | crawl | Part 2 | `claude-code/managed-settings.json` |
 | Codex baseline | crawl | Part 2 | `codex/requirements.toml` |
 | Cursor hardening notes | crawl | Part 2 | `cursor/README.md` |
@@ -236,6 +267,11 @@ before installing it.
   traffic.
 - **It is a hardening assistant, not a compliance attestation.** Mapping controls to
   frameworks (OWASP, NIST, ISO 42001, EU AI Act) is the guide's Part 12, not this skill.
+- **The exposure check sees only its covered sources.** It matches watchlisted products
+  against OSV/KEV/pulse; it does not see transitive dependencies, bundled runtimes, or
+  products outside the watchlist, and closed-source products may have no OSV data at
+  all (the report labels these "limited coverage"). Absence of findings is not absence
+  of risk — the report says so itself; keep it that way.
 
 ## Sources
 
