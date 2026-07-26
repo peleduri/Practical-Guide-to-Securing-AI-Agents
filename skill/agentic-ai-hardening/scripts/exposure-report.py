@@ -155,15 +155,33 @@ def safe_url(url):
 
 
 def version_key(text):
-    """Sort key that orders versions numerically, not lexicographically.
+    """Sort key that orders versions numerically, not lexicographically, and
+    ranks a release above its own prereleases.
 
-    Lexicographic sorting puts "0.9.2" after "0.10.0", so a brew Cellar or
-    site-packages holding both (brew keeps old versions until `brew cleanup`)
-    would report the OLDER install — and an old version is exactly what makes a
-    patched machine render as confirmed/actively-exploited. That is the
-    credibility failure this project exists to avoid."""
-    parts = re.split(r"[._\-+]", str(text))
-    return [(0, int(p)) if p.isdigit() else (1, p) for p in parts if p != ""]
+    Two ways picking the "newest" entry goes wrong, both of which report an
+    OLDER build and so can make a patched machine render as exploited:
+
+    1. Lexicographic order puts "0.9.2" after "0.10.0". A brew Cellar or a
+       site-packages dir holding both (brew keeps old versions until
+       `brew cleanup`) would report the older one.
+    2. Comparing component lists alone ranks "2.0.0-rc1" ABOVE "2.0.0",
+       because the prerelease list is longer and a shorter list sorts first.
+       Semver precedence is the opposite: a version carrying a prerelease
+       suffix is LOWER than the same version without one.
+
+    Key shape: (numeric components, 1 if final else 0, suffix components).
+    Types stay consistent across all three slots so comparison never raises on
+    an odd version string."""
+    s = str(text)
+    m = re.match(r"^(\d+(?:\.\d+)*)(.*)$", s)
+    if not m:
+        # Not version-shaped at all: order below anything numeric, but stably.
+        return ((), 0, (s,))
+    nums = tuple(int(p) for p in m.group(1).split("."))
+    suffix = m.group(2).lstrip(".-+~")
+    if not suffix:
+        return (nums, 1, ())          # a bare release outranks its prereleases
+    return (nums, 0, tuple(p for p in re.split(r"[._\-+]", suffix) if p))
 
 
 def _read_capped(resp, cap):

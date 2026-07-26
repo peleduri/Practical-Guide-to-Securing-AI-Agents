@@ -700,6 +700,30 @@ class TestVersionHandlers(unittest.TestCase):
             sorted(["0.9.2", "0.10.0", "0.10.1"], key=er.version_key)[-1],
             "0.10.1")
 
+    def test_release_outranks_its_own_prerelease(self):
+        """Comparing component lists alone ranked "2.0.0-rc1" ABOVE "2.0.0"
+        (longer list, and a shorter list sorts first), so a machine with both
+        installed reported the release candidate. Semver precedence is the
+        opposite, and reporting the older build is how a patched machine ends
+        up looking exploited."""
+        for entries, expected in (
+                (["2.0.0", "2.0.0-rc1"], "2.0.0"),
+                (["2.0.0", "2.0.0-beta"], "2.0.0"),
+                (["2.0.0", "2.0.0+build7"], "2.0.0"),
+        ):
+            self.assertEqual(max(entries, key=er.version_key), expected,
+                             "wrong pick for %s" % entries)
+
+    def test_prereleases_still_order_among_themselves(self):
+        self.assertEqual(
+            max(["2.0.0-rc1", "2.0.0-rc2"], key=er.version_key), "2.0.0-rc2")
+
+    def test_version_key_never_raises_on_odd_input(self):
+        # Mixed shapes must remain comparable — a TypeError here would crash a
+        # scan on a machine with an unusual entry name.
+        odd = ["latest", "1.2.3", "3", "2.0.0-rc1", "v", "2026.01.01", ""]
+        self.assertEqual(max(odd, key=er.version_key), "2026.01.01")
+
     def test_npm_global_no_root_fallback(self):
         """With a package NAME given, a bare <root>/package.json must NOT be
         used — that would attribute an unrelated package's version to this
