@@ -1,0 +1,2 @@
+{ "items": [ { "title": "Legacy-shaped item (fixture)",
+               "url": "https://example.com/legacy", "cve": "CVE-2026-99999" } ] }
