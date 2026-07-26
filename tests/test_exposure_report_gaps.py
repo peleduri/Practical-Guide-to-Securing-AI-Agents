@@ -646,6 +646,37 @@ class TestVersionHandlers(unittest.TestCase):
         self.assertEqual(v, "0.5.1")
         self.assertEqual(ev, cellar)
 
+    def test_versioned_dir_handles_file_entries(self):
+        """Claude Code's native installer writes one executable FILE per
+        version (~/.local/share/claude/versions/2.1.220), not a directory.
+        Filtering entries by isdir silently returned "version unknown" for the
+        product most readers actually have installed — found by a live run."""
+        base = os.path.join(self.tmp, "versions")
+        os.makedirs(base)
+        for v in ("2.1.9", "2.1.216", "2.1.220"):
+            with open(os.path.join(base, v), "w", encoding="utf-8") as fh:
+                fh.write("binary-stand-in")
+        got, ev = er.version_from_versioned_dir({"paths": [base]})
+        self.assertEqual(got, "2.1.220")   # not "2.1.9" (lexicographic max)
+        self.assertEqual(ev, base)
+
+    def test_versioned_dir_handles_directory_entries(self):
+        """The Homebrew Cellar shape must keep working through the same code."""
+        base = os.path.join(self.tmp, "Cellar", "ollama")
+        for v in ("0.9.2", "0.10.0"):
+            os.makedirs(os.path.join(base, v))
+        got, _ = er.version_from_versioned_dir({"paths": [base]})
+        self.assertEqual(got, "0.10.0")
+
+    def test_versioned_dir_ignores_non_version_entries(self):
+        base = os.path.join(self.tmp, "mixed")
+        os.makedirs(base)
+        for name in ("README", ".DS_Store", "latest", "1.2.3"):
+            with open(os.path.join(base, name), "w", encoding="utf-8") as fh:
+                fh.write("x")
+        got, _ = er.version_from_versioned_dir({"paths": [base]})
+        self.assertEqual(got, "1.2.3")
+
     def test_brew_cellar_picks_semantically_newest(self):
         """brew keeps old versions until `brew cleanup`. Lexicographic sorting
         would pick 0.9.2 over 0.10.0 — reporting the OLD, vulnerable install
