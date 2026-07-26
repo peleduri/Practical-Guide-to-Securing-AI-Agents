@@ -1,0 +1,21 @@
+{
+  "_meta": { "schema_version": 1, "description": "TEST FIXTURE - two OSV-covered versioned products (multi-product CVE)" },
+  "products": {
+    "alpha": {
+      "name": "Alpha",
+      "aliases": ["alpha"],
+      "osv_queries": [ { "ecosystem": "PyPI", "name": "alpha" } ],
+      "inventory_ids": ["alpha"],
+      "version_sources": [ { "type": "clone_package_json", "roots": ["tests/fixtures/ollama-install"] } ],
+      "guide": { "part": "wiki/part-1-risk-surface-and-control-model.md", "template": null }
+    },
+    "beta": {
+      "name": "Beta",
+      "aliases": ["beta"],
+      "osv_queries": [ { "ecosystem": "PyPI", "name": "beta" } ],
+      "inventory_ids": ["beta"],
+      "version_sources": [ { "type": "clone_package_json", "roots": ["tests/fixtures/ollama-install-patched"] } ],
+      "guide": { "part": "wiki/part-2-endpoint-hardening-and-policy-playbook.md", "template": null }
+    }
+  }
+}

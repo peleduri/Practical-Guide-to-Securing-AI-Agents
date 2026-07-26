@@ -1,0 +1,6 @@
+{
+  "vulnerabilities": [
+    { "cveID": "CVE-2026-88888", "vendorProject": "Beta", "product": "Beta",
+      "shortDescription": "Unrelated Beta issue (fixture)", "dateAdded": "2026-04-01" }
+  ]
+}

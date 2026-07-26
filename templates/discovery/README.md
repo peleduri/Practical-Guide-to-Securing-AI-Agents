@@ -4,7 +4,29 @@
 [Part 1](../../wiki/part-1-risk-surface-and-control-model.md) and the **first of the five
 controls** in [`../../start-here.md`](../../start-here.md): *you cannot govern what you
 cannot see.* It lists the coding agents installed for one user on one machine and the MCP
-tool servers they are wired to reach.
+tool servers they are wired to reach. `--json` adds machine-consumer fields (stable
+`product` ID + install `channel`) used by the exposure report below.
+
+This directory also holds the **exposure layer** built on top of it:
+
+- **`exposure-report.py`** — matches the inventory against live advisory sources:
+  OSV.dev (the installed version goes *in* the query, so OSV evaluates affected
+  ranges server-side), the CISA KEV catalog (active exploitation), and the
+  [zero-day-pulse](https://github.com/peleduri/zero-day-pulse) feed (enrichment).
+  Read-only by default — versions come from package metadata (brew Cellar, npm/pip
+  metadata, app plists); it executes a target binary only under the explicit
+  `--probe-binaries` flag, because a compromised target must never get code
+  execution inside the scanner. Honest labels: a KEV name-match alone is
+  `possible`, never `confirmed`; it never says "clean"; every report carries a
+  coverage footer. Deterministic replay flags (`--osv/--kev/--feed/--inventory/--now`)
+  drive the CI fixtures in `tests/`; `--offline` never opens a socket.
+- **`agentic-watchlist.json`** — the curated product watchlist that drives the
+  matching: aliases as advisories spell them, OSV `{ecosystem, name}` coordinates,
+  per-install-channel version metadata sources, and the guide part + control
+  template that mitigates each product's exposure class. Five flagship products
+  today (Ollama, Cursor, Claude Code, LiteLLM, LibreChat), growing ~5/week.
+  Because its probe commands *can* execute under `--probe-binaries`, the watchlist
+  is policed like code: vendored in the skill and lint-enforced byte-identical.
 
 ## What it finds
 

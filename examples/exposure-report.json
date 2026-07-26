@@ -1,0 +1,68 @@
+{
+  "findings": [
+    {
+      "actively_exploited": true,
+      "confidence": "confirmed",
+      "id": "CVE-2026-99999",
+      "kev_date": "2026-06-20",
+      "products": [
+        "ollama"
+      ],
+      "pulse": {
+        "title": "Ollama zero-day actively exploited (fixture)",
+        "url": "https://example.com/pulse"
+      },
+      "sources": [
+        "osv",
+        "kev",
+        "pulse"
+      ],
+      "summary": "Remote code execution in Ollama server fixture",
+      "urls": [
+        "https://example.com/advisory"
+      ]
+    },
+    {
+      "actively_exploited": false,
+      "confidence": "possible",
+      "id": "CVE-2026-11111",
+      "kev_date": "2026-05-01",
+      "products": [
+        "cursor"
+      ],
+      "pulse": null,
+      "sources": [
+        "kev"
+      ],
+      "summary": "Cursor workspace trust bypass (fixture)",
+      "urls": []
+    }
+  ],
+  "generated": "2026-07-26",
+  "probing": false,
+  "products": [
+    {
+      "evidence": null,
+      "present": true,
+      "product": "cursor",
+      "state": "matched",
+      "version": null
+    },
+    {
+      "evidence": "tests/fixtures/ollama-install/package.json",
+      "present": true,
+      "product": "ollama",
+      "state": "matched",
+      "version": "0.9.2"
+    }
+  ],
+  "schema_version": 1,
+  "sources": {
+    "notes": {},
+    "status": {
+      "kev": "replay",
+      "osv": "replay",
+      "pulse": "replay"
+    }
+  }
+}

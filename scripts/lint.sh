@@ -34,16 +34,22 @@ for part in wiki/part-*.md; do
   grep -q "$base" index.md || { echo "ORPHAN: $base is not listed in index.md"; fail=1; }
 done
 
-# 3. Bundled-copy drift: the discovery script the skill executes is bundled inside
-#    the skill (so it is reviewed at install time, not fetched-and-run). It must stay
-#    identical to the canonical template it was copied from.
-_canon="templates/discovery/inventory-agents.sh"
-_bundled="skill/agentic-ai-hardening/scripts/inventory-agents.sh"
-if [ -f "$_canon" ] && [ -f "$_bundled" ]; then
-  cmp -s "$_canon" "$_bundled" || { echo "DRIFT: $_bundled differs from $_canon (re-copy the canonical version)"; fail=1; }
-elif [ -f "$_bundled" ] && [ ! -f "$_canon" ]; then
-  echo "DRIFT: $_bundled has no canonical source at $_canon"; fail=1
-fi
+# 3. Bundled-copy drift: everything the skill executes (and the watchlist, whose
+#    probe commands can run under --probe-binaries) is bundled inside the skill so
+#    it is reviewed at install time, not fetched-and-run. Every bundled copy must
+#    stay byte-identical to its canonical template.
+while IFS='|' read -r _canon _bundled; do
+  if [ -f "$_canon" ] && [ -f "$_bundled" ]; then
+    cmp -s "$_canon" "$_bundled" || { echo "DRIFT: $_bundled differs from $_canon (re-copy the canonical version)"; fail=1; }
+  elif [ -f "$_bundled" ] && [ ! -f "$_canon" ]; then
+    echo "DRIFT: $_bundled has no canonical source at $_canon"; fail=1
+  fi
+done <<'PAIRS'
+templates/discovery/inventory-agents.sh|skill/agentic-ai-hardening/scripts/inventory-agents.sh
+templates/discovery/exposure-report.py|skill/agentic-ai-hardening/scripts/exposure-report.py
+templates/discovery/agentic-watchlist.json|skill/agentic-ai-hardening/scripts/agentic-watchlist.json
+templates/assessment/scorecard.sh|skill/agentic-ai-hardening/scripts/scorecard.sh
+PAIRS
 
 if [ "$fail" -ne 0 ]; then
   echo "FAIL: fix the issues above."

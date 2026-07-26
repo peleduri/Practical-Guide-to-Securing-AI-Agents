@@ -1,0 +1,13 @@
+{
+  "_meta": { "schema_version": 1, "description": "TEST FIXTURE - only an unversioned, OSV-uncovered product (drives the OSV n/a state)" },
+  "products": {
+    "present-no-version": {
+      "name": "PresentNoVersion",
+      "aliases": ["presentnoversion"],
+      "osv_queries": [],
+      "inventory_ids": ["present-no-version"],
+      "version_sources": [],
+      "guide": { "part": "wiki/part-1-risk-surface-and-control-model.md", "template": null }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "results": [ { "vulns": [ { "id": "GHSA-test-0001" } ] } ],
+  "details": {
+    "GHSA-test-0001": {
+      "id": "GHSA-test-0001",
+      "aliases": ["CVE-2026-99999"],
+      "summary": "Remote code execution in Ollama server fixture",
+      "references": [ { "url": "https://example.com/advisory" } ]
+    }
+  }
+}

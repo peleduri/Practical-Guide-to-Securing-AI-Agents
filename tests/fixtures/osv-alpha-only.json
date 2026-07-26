@@ -1,0 +1,10 @@
+{
+  "results": [
+    { "vulns": [ { "id": "CVE-2026-88888" } ] },
+    { "vulns": [] }
+  ],
+  "details": {
+    "CVE-2026-88888": { "id": "CVE-2026-88888", "aliases": [],
+      "summary": "Alpha flaw that KEV does NOT list for Alpha" }
+  }
+}

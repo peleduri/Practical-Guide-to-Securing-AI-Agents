@@ -17,13 +17,15 @@ You don't have to read all 14 parts to start. Point your coding agent at this gu
 Two ways to run, both read-only:
 
 - **As an Agent Skill** (Claude Code / Codex CLI / Cursor) — the portable [`agentic-ai-hardening` skill](skill/README.md) runs the whole loop: discover → assess → report → (opt-in) harden.
-- **Or one command, locally** — clone and run `assess.sh`: it runs the read-only discovery scan and renders a starter scorecard, all local, nothing committed.
+- **Or one command, locally** — clone and run `assess.sh`: it runs the read-only discovery scan, matches the tools it finds against live advisory data (OSV.dev, CISA KEV, [zero-day-pulse](https://github.com/peleduri/zero-day-pulse)) into an **exposure report** — *"your Ollama version has an actively-exploited CVE, here's the fix and the control that mitigates the class"* — and renders a starter scorecard. All output stays local, nothing committed.
 
   ```bash
   git clone https://github.com/peleduri/Practical-Guide-to-Securing-AI-Agents
   cd Practical-Guide-to-Securing-AI-Agents
-  bash scripts/assess.sh        # read-only; writes a starter scorecard to ./.agent-assessment/
+  bash scripts/assess.sh        # read-only; writes scorecard + exposure report to ./.agent-assessment/
   ```
+
+  **[→ See an example exposure report](examples/exposure-report.md)** (fixture data). Honest by design: it never executes your installed tools (package metadata only), never says "clean" (only *"no matching advisories in covered sources"*), reserves "actively exploited" for KEV-corroborated version-confirmed hits, and states its coverage limits in every report. The advisory match sends each watched product's name+version to OSV.dev — no machine identifiers; `--offline` (via `EXPOSURE_REPORT_ARGS`) skips all network use.
 
 **Share your result.** The scorecard prints a copy-ready maturity badge for your own README — e.g. ![agent security: walk](https://img.shields.io/badge/agent%20security-walk-c2410c) — so your posture links back here.
 

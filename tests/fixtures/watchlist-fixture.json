@@ -1,0 +1,22 @@
+{
+  "_meta": { "schema_version": 1, "description": "TEST FIXTURE watchlist - deterministic version sources" },
+  "products": {
+    "ollama": {
+      "name": "Ollama",
+      "aliases": ["ollama", "Ollama"],
+      "osv_queries": [ { "ecosystem": "Go", "name": "github.com/ollama/ollama" } ],
+      "inventory_ids": ["ollama"],
+      "version_sources": [ { "type": "clone_package_json", "roots": ["tests/fixtures/ollama-install"] } ],
+      "guide": { "part": "wiki/part-11-local-open-source-models.md",
+                 "template": "templates/detections/local-inference-endpoint.yml" }
+    },
+    "cursor": {
+      "name": "Cursor",
+      "aliases": ["cursor", "Cursor IDE"],
+      "osv_queries": [],
+      "inventory_ids": ["cursor"],
+      "version_sources": [],
+      "guide": { "part": "wiki/part-2-endpoint-hardening-and-policy-playbook.md", "template": null }
+    }
+  }
+}
