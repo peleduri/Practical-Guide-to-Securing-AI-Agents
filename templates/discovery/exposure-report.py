@@ -88,6 +88,12 @@ CVE_RE = re.compile(r"CVE-\d{4}-\d{4,}")
 # from a cloned repo's package.json, an app plist, or a directory name — all
 # third-party-writable. Anything outside this shape becomes "version unknown".
 VERSION_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+~:-]{0,63}$")
+# Stricter still, for choosing an ENTRY NAME out of a directory listing. A
+# versions dir often also holds `latest`, `current`, or a README, and VERSION_RE
+# accepts those as strings — picking one would report a non-version AS the
+# installed version and send it to OSV. Require a leading digit and a
+# version-shaped body.
+VERSION_DIR_RE = re.compile(r"^\d+(?:\.\d+)*(?:[-+~.][A-Za-z0-9.]+)?$")
 # A vuln id we are willing to put in a URL path or a report heading.
 VULN_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 
@@ -149,15 +155,33 @@ def safe_url(url):
 
 
 def version_key(text):
-    """Sort key that orders versions numerically, not lexicographically.
+    """Sort key that orders versions numerically, not lexicographically, and
+    ranks a release above its own prereleases.
 
-    Lexicographic sorting puts "0.9.2" after "0.10.0", so a brew Cellar or
-    site-packages holding both (brew keeps old versions until `brew cleanup`)
-    would report the OLDER install — and an old version is exactly what makes a
-    patched machine render as confirmed/actively-exploited. That is the
-    credibility failure this project exists to avoid."""
-    parts = re.split(r"[._\-+]", str(text))
-    return [(0, int(p)) if p.isdigit() else (1, p) for p in parts if p != ""]
+    Two ways picking the "newest" entry goes wrong, both of which report an
+    OLDER build and so can make a patched machine render as exploited:
+
+    1. Lexicographic order puts "0.9.2" after "0.10.0". A brew Cellar or a
+       site-packages dir holding both (brew keeps old versions until
+       `brew cleanup`) would report the older one.
+    2. Comparing component lists alone ranks "2.0.0-rc1" ABOVE "2.0.0",
+       because the prerelease list is longer and a shorter list sorts first.
+       Semver precedence is the opposite: a version carrying a prerelease
+       suffix is LOWER than the same version without one.
+
+    Key shape: (numeric components, 1 if final else 0, suffix components).
+    Types stay consistent across all three slots so comparison never raises on
+    an odd version string."""
+    s = str(text)
+    m = re.match(r"^(\d+(?:\.\d+)*)(.*)$", s)
+    if not m:
+        # Not version-shaped at all: order below anything numeric, but stably.
+        return ((), 0, (s,))
+    nums = tuple(int(p) for p in m.group(1).split("."))
+    suffix = m.group(2).lstrip(".-+~")
+    if not suffix:
+        return (nums, 1, ())          # a bare release outranks its prereleases
+    return (nums, 0, tuple(p for p in re.split(r"[._\-+]", suffix) if p))
 
 
 def _read_capped(resp, cap):
@@ -321,18 +345,36 @@ def _expand(pattern):
     return sorted(glob.glob(os.path.expanduser(pattern)))
 
 
-def version_from_brew_cellar(src):
+def version_from_versioned_dir(src):
+    """Entry-per-version layouts: each installed version appears as an entry
+    named for that version.
+
+    Two real shapes, both handled: Homebrew's Cellar uses a DIRECTORY per
+    version, while Claude Code's native installer writes a single executable
+    FILE per version (~/.local/share/claude/versions/2.1.220). Entries are
+    therefore not filtered by type — only by whether the name parses as a
+    version. Still metadata-only: the name is read, the file is never executed.
+
+    Both layouts keep older versions around, which is exactly why the newest is
+    chosen by version_key rather than lexicographically — "2.1.9" sorts after
+    "2.1.220" as a string, and reporting the older version is how a patched
+    machine ends up looking exploited."""
     for p in src.get("paths", []):
-        for cellar in _expand(p):
+        for base in _expand(p):
             try:
-                versions = [d for d in os.listdir(cellar)
-                            if not d.startswith(".")]
+                entries = os.listdir(base)
             except OSError:
                 continue
+            versions = [e for e in entries
+                        if not e.startswith(".") and VERSION_DIR_RE.match(e)]
             if versions:
-                # Newest by version order, NOT lexicographic (see version_key).
-                return max(versions, key=version_key), cellar
+                return max(versions, key=version_key), base
     return None, None
+
+
+# Kept as an alias: `brew_cellar` reads naturally in a watchlist entry, and
+# existing entries use it.
+version_from_brew_cellar = version_from_versioned_dir
 
 
 def version_from_plist(src):
@@ -421,7 +463,8 @@ def version_from_probe(src, probing_enabled):
 
 
 VERSION_HANDLERS = {
-    "brew_cellar": version_from_brew_cellar,
+    "versioned_dir": version_from_versioned_dir,
+    "brew_cellar": version_from_brew_cellar,      # alias of versioned_dir
     "macos_app_plist": version_from_plist,
     "npm_global_package_json": version_from_npm_global,
     "clone_package_json": version_from_clone_package_json,

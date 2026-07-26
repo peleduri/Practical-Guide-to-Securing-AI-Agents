@@ -49,6 +49,7 @@
       ],
       "inventory_ids": ["claude", "claude-code"],
       "version_sources": [
+        { "type": "versioned_dir", "paths": ["~/.local/share/claude/versions"] },
         { "type": "npm_global_package_json", "package": "@anthropic-ai/claude-code",
           "roots": ["/opt/homebrew/lib/node_modules", "/usr/local/lib/node_modules", "~/.nvm/versions/node/*/lib/node_modules", "~/.local/share/claude/node_modules"] },
         { "type": "brew_cellar", "paths": ["/opt/homebrew/Cellar/claude-code", "/usr/local/Cellar/claude-code"] }
