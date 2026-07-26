@@ -573,6 +573,51 @@ class TestCacheIntegrity(IsolatedEnvMixin, unittest.TestCase):
         self.assertIn("using cached copy", md)
 
 
+class TestPulseRealSchema(IsolatedEnvMixin, unittest.TestCase):
+    """The live feed keys findings under `findings` with CVEs in `cve_ids`.
+
+    The original fixture invented `items`, so enrichment never once worked
+    against the real feed while every test passed — caught only by running the
+    tool live. These tests pin the REAL shape; pulse-fixture.json now mirrors
+    the production payload rather than a guess."""
+
+    def run_with_feed(self, feed):
+        return er.main(["--watchlist", fx("watchlist-fixture.json"),
+                        "--inventory", fx("inventory-fixture.jsonl"),
+                        "--osv", fx("osv-confirmed.json"),
+                        "--kev", fx("kev-fixture.json"),
+                        "--feed", fx(feed),
+                        "--now", "2026-07-01", "--out", self.out])
+
+    def test_real_findings_schema_enriches(self):
+        rc = self.run_with_feed("pulse-fixture.json")
+        self.assertEqual(rc, 0)
+        _, report = self.read_report()
+        self.assertEqual(report["sources"]["status"]["pulse"], "replay")
+        finding = next(f for f in report["findings"]
+                       if f["id"] == "CVE-2026-99999")
+        self.assertIsNotNone(finding["pulse"],
+                             "cve_ids under findings[] must drive enrichment")
+        self.assertIn("pulse", finding["sources"])
+
+    def test_legacy_items_schema_still_accepted(self):
+        rc = self.run_with_feed("pulse-legacy-items.json")
+        self.assertEqual(rc, 0)
+        _, report = self.read_report()
+        self.assertEqual(report["sources"]["status"]["pulse"], "replay")
+        finding = next(f for f in report["findings"]
+                       if f["id"] == "CVE-2026-99999")
+        self.assertIsNotNone(finding["pulse"])
+
+    def test_neither_key_is_a_clean_schema_mismatch(self):
+        rc = self.run_with_feed("pulse-bad-fixture.json")
+        self.assertEqual(rc, 2)
+        _, report = self.read_report()
+        self.assertEqual(report["sources"]["status"]["pulse"], "skipped")
+        self.assertIn("findings/items",
+                      report["sources"]["notes"]["pulse"])
+
+
 class TestKevHaystackPrecompute(unittest.TestCase):
     def test_haystacks_built_once_and_match(self):
         kev = [{"cveID": "CVE-1", "vendorProject": "Ollama", "product": "Ollama"},

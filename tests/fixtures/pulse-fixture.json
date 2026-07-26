@@ -1,2 +1,21 @@
-{ "items": [ { "title": "Ollama zero-day actively exploited (fixture)",
-               "url": "https://example.com/pulse", "cve": "CVE-2026-99999" } ] }
+{
+  "generated": "2026-07-26T12:53:40.864371+00:00",
+  "total": 1,
+  "kev": 1,
+  "zero_day": 1,
+  "enriched": 1,
+  "findings": [
+    {
+      "id": "https://example.com/pulse",
+      "title": "Ollama zero-day actively exploited (fixture)",
+      "summary": "Fixture item mirroring the real zero-day-pulse schema.",
+      "link": "https://example.com/pulse",
+      "source": "SecurityWeek",
+      "published": "2026-06-20T00:00:00+00:00",
+      "cve_ids": ["CVE-2026-99999"],
+      "is_zero_day": true,
+      "is_high_severity": true,
+      "tags": ["zero-day"]
+    }
+  ]
+}
