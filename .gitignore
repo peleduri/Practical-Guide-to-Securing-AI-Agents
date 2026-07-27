@@ -7,3 +7,11 @@
 # python bytecode
 __pycache__/
 *.pyc
+
+# demo recording output — `pocu record` writes these beside examples/demo/demo.toml.
+# Large binaries and machine-specific sidecars; the spec is the artifact worth
+# committing, not the take. Publish a recording as a release/PR attachment.
+*.mov
+*.webm
+*.mov.ffmpeg.log
+*.mov.timeline.json

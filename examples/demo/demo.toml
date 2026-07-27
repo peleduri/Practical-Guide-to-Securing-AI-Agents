@@ -1,0 +1,83 @@
+# PoCumentary demo — the exposure report, end to end, in two terminals.
+#
+# Pane 1 runs the real read-only discovery scan on the recording machine.
+# Pane 2 matches that inventory against advisory data and renders the report,
+# with the feeds REPLAYED from tests/fixtures so every take shows the same
+# finding. Those replay flags ship with the tool (--osv/--kev/--feed/--now);
+# the identical command without them queries OSV.dev, CISA KEV and
+# zero-day-pulse live. The caption track states this on screen — a demo of a
+# tool whose whole pitch is honest labelling should not overstate itself.
+#
+#   uv run pocu validate examples/demo/demo.toml     # schema only, no screen
+#   uv run pocu dryrun   examples/demo/demo.toml     # headless, proves it runs
+#   uv run pocu record   examples/demo/demo.toml     # the take (macOS + perms)
+#   uv run pocu annotate examples/demo/demo.toml <recording>.mov   # burn captions
+#   uv run pocu narrate  examples/demo/demo.toml <recording>.mov   # speak them
+#
+# Requires PoCumentary: https://github.com/pillar-labs/pocumentary
+
+[recording]
+fps = 30
+out = "exposure-report-demo-{stamp}.mov"
+crop = "auto"
+step_delay = 1.5
+gate_timeout = 90.0
+hold = 14.0          # room for the closing caption after report_ready (~22s in)
+keep = 3
+
+[layout]
+mode = "columns"
+
+[verify]
+# The exposure pane only touches `report_ready` after the report renders, so a
+# dryrun fails if the pipeline breaks. This is a real success predicate.
+expect = ["report_ready"]
+timeout = 90
+
+[[pane]]
+title = "1  DISCOVER"
+cmd = "bash roles/discover.sh"
+signals = ["inventory_ready"]
+
+[[pane]]
+title = "2  EXPOSURE"
+cmd = "bash roles/exposure.sh"
+gate_on = "inventory_ready"    # never show matching before there is an inventory
+signals = ["report_ready"]
+
+# --- Caption / narration track. Anchored to events, not wall-clock seconds, so
+# the wording can change without re-recording.
+#
+# Durations are sized to the gaps MEASURED in a real take (see the
+# .timeline.json sidecar a recording drops beside it):
+#
+#     0.0s  start              12.4s  inventory_ready
+#     3.6s  pane:1 DISCOVER    13.9s  pane:2 EXPOSURE    22.2s  report_ready
+#
+# so each caption fits the window it actually gets. An earlier draft anchored a
+# 14s caption to `inventory_ready`, which the next caption replaced after 1.6s,
+# and closed with a caption that ran past the end of the recording. Nothing but
+# a take reveals that — re-check the sidecar after changing pacing or a role.
+# Deliberately no caption on `pane:2 EXPOSURE`: it fires 1.6s after
+# `inventory_ready` and would just cut that line off.
+
+[[annotation]]
+on = "start"
+text = "Agentic AI tools reach developer machines faster than anyone can inventory them. This scan finds them, then asks what is exposed."
+duration = 12.0
+
+[[annotation]]
+on = "inventory_ready"
+text = "Discovery changed nothing. Each installed version now goes to OSV.dev for range evaluation."
+duration = 9.5
+
+[[annotation]]
+on = "report_ready"
+text = "One confirmed hit: OSV matched the installed Ollama, and CISA KEV says it is exploited in the wild."
+duration = 9.0
+
+[[annotation]]
+on = "report_ready"
+delay = 9.0
+text = "The report never says clean, and always lists what it cannot see."
+duration = 7.0
