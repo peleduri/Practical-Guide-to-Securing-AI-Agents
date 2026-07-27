@@ -1,0 +1,77 @@
+# PoCumentary demo — the exposure report, end to end, in two terminals.
+#
+# Pane 1 runs the real read-only discovery scan on the recording machine.
+# Pane 2 matches that inventory against advisory data and renders the report,
+# with the feeds REPLAYED from tests/fixtures so every take shows the same
+# finding. Those replay flags ship with the tool (--osv/--kev/--feed/--now);
+# the identical command without them queries OSV.dev, CISA KEV and
+# zero-day-pulse live. The caption track states this on screen — a demo of a
+# tool whose whole pitch is honest labelling should not overstate itself.
+#
+#   uv run pocu validate examples/demo/demo.toml     # schema only, no screen
+#   uv run pocu dryrun   examples/demo/demo.toml     # headless, proves it runs
+#   uv run pocu record   examples/demo/demo.toml     # the take (macOS + perms)
+#   uv run pocu annotate examples/demo/demo.toml <recording>.mov   # burn captions
+#   uv run pocu narrate  examples/demo/demo.toml <recording>.mov   # speak them
+#
+# Requires PoCumentary: https://github.com/pillar-labs/pocumentary
+
+[recording]
+fps = 30
+out = "exposure-report-demo-{stamp}.mov"
+crop = "auto"
+step_delay = 1.5
+gate_timeout = 90.0
+hold = 10.0          # keep rolling so the coverage footer and exit code land
+keep = 3
+
+[layout]
+mode = "columns"
+
+[verify]
+# The exposure pane only touches `report_ready` after the report renders, so a
+# dryrun fails if the pipeline breaks. This is a real success predicate.
+expect = ["report_ready"]
+timeout = 90
+
+[[pane]]
+title = "1  DISCOVER"
+cmd = "bash roles/discover.sh"
+signals = ["inventory_ready"]
+
+[[pane]]
+title = "2  EXPOSURE"
+cmd = "bash roles/exposure.sh"
+gate_on = "inventory_ready"    # never show matching before there is an inventory
+signals = ["report_ready"]
+
+# --- Caption / narration track. Anchored to events, not wall-clock seconds, so
+# the wording can change without re-recording. The arc: what the tool is, what
+# discovery found, the finding itself, and then the honesty guarantees — which
+# are the actual product, not the red banner. ---
+
+[[annotation]]
+on = "start"
+text = "Agentic AI tools reach developer machines faster than anyone can inventory them. This scan finds them, then asks if any is exposed right now."
+duration = 14.0
+
+[[annotation]]
+on = "inventory_ready"
+text = "Discovery ran locally and changed nothing: agent CLIs, the MCP servers they reach, local model runtimes, and the extensions loaded in."
+duration = 14.0
+
+[[annotation]]
+on = "pane:2  EXPOSURE"
+text = "Each installed version goes to OSV.dev, which evaluates affected ranges server side. KEV says what is exploited today. Feeds are replayed here."
+duration = 14.0
+
+[[annotation]]
+on = "report_ready"
+text = "One confirmed hit: an Ollama version OSV matched, corroborated by CISA KEV, so it is genuinely exploited in the wild. The report names the fix."
+duration = 14.0
+
+[[annotation]]
+on = "report_ready"
+delay = 14.0
+text = "The second is possible, not confirmed: KEV carries no version data, and a patched install must never read as exploited. This report never says clean."
+duration = 16.0

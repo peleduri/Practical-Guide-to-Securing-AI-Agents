@@ -2,24 +2,15 @@
 
 Deferred work with enough context to pick up cold. Format: What / Why / Pros / Cons / Context / Depends on.
 
-## Record the 30-second exposure-report demo GIF
+## Record the exposure-report demo
 
 - **Priority:** P1
-- **What:** Record a terminal GIF of the exposure report finding an actively-exploited CVE, and link it from README.md.
-- **Why:** It's the M1 deliverable that makes the tool legible in three seconds to anyone scrolling the repo or a post. The sample report (`examples/exposure-report.md`) carries the same content as text, but a GIF is what travels.
-- **Pros:** Turns the front door from "read this" into "watch this"; reusable in a talk or writeup.
-- **Cons:** Human capture step (asciinema/terminalizer + gif conversion); needs a re-record whenever the report layout changes materially.
-- **Context:** Deferred from the M1 ship (2026-07-26) — a recording is a human step, not code. Everything needed is already deterministic. Record against the fixtures so the demo never depends on live feeds:
-  ```bash
-  python3 templates/discovery/exposure-report.py \
-    --watchlist tests/fixtures/watchlist-fixture.json \
-    --inventory tests/fixtures/inventory-fixture.jsonl \
-    --osv tests/fixtures/osv-confirmed.json \
-    --kev tests/fixtures/kev-fixture.json \
-    --feed tests/fixtures/pulse-fixture.json \
-    --now 2026-07-26 --out /tmp/demo && cat /tmp/demo/exposure-report.md
-  ```
-- **Depends on:** nothing — ready to record now.
+- **What:** Run `pocu record` against [`examples/demo/demo.toml`](examples/demo/demo.toml), burn or speak the captions, and link the result from README.md.
+- **Why:** It's the M1 deliverable that makes the tool legible in seconds to anyone scrolling the repo or a post. The sample report carries the same content as text, but a recording is what travels.
+- **Pros:** Turns the front door from "read this" into "watch this"; reusable in a talk or writeup. The spec is declarative, so re-recording after a layout change is one command, not a re-performance.
+- **Cons:** `record` needs macOS plus ffmpeg plus Screen Recording permission for the terminal, which is a human grant. Optional spoken narration needs an ElevenLabs key or the on-device fallback.
+- **Context:** The spec, the two role scripts, and a README are committed under `examples/demo/`, built with [PoCumentary](https://github.com/pillar-labs/pocumentary). `uv run pocu dryrun examples/demo/demo.toml` already PASSes headless, so the pipeline is proven; only the on-screen take is left. Pane 1 scans the recording machine for real; pane 2 replays advisory feeds from `tests/fixtures/` so every take is identical, and the captions say so on screen. Deliberately a narrated `.mov`/`.webm` rather than a GIF: GitHub renders video inline, and the caption track carries the honesty framing that is the actual product.
+- **Depends on:** nothing — the spec is ready; run `record` on a macOS machine with the permission granted.
 
 ## NVD or vendor-advisory fallback for proprietary agentic products
 
