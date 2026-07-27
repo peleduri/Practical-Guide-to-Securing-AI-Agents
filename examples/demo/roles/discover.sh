@@ -25,4 +25,13 @@ sleep "$beat"
 
 printf '\nNothing was changed. Nothing was sent.\n'
 touch "${DEMO_RUNTIME_DIR:-/tmp}/inventory_ready"
-sleep 600   # hold the pane so the finished output stays on screen
+
+# Stay on screen until the exposure pane has rendered its report, so this pane's
+# output is still visible in the take, then exit. Bounded: never outlive the
+# demo. (Roles exit and let [recording] hold keep the camera rolling — the
+# convention PoCumentary's own examples use.)
+for _ in $(seq 1 120); do
+  [ -e "${DEMO_RUNTIME_DIR:-/tmp}/report_ready" ] && break
+  sleep 1
+done
+sleep 6

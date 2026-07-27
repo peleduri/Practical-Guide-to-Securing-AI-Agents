@@ -42,6 +42,41 @@ uv run pocu annotate <guide>/examples/demo/demo.toml exposure-report-demo-<stamp
 uv run pocu narrate  <guide>/examples/demo/demo.toml exposure-report-demo-<stamp>.mov
 ```
 
+### `record` needs Screen Recording permission, and fails quietly without it
+
+The capture is `ffmpeg` reading macOS AVFoundation, so **the app that launches it
+needs Screen Recording permission** (System Settings, Privacy & Security, Screen
+& System Audio Recording) — that means your terminal, or whatever wrapper you run
+`pocu` from. Grant it, then fully quit and reopen that app; macOS only picks the
+grant up on relaunch.
+
+Without it the demo still runs and the timeline sidecar still gets written, so it
+looks like it worked — but no `.mov` appears. The signature is in the
+`.mov.ffmpeg.log` beside it:
+
+```
+[AVFoundation indev @ ...] Configuration of video device failed, falling back to default.
+```
+
+and no `Stream mapping` or `frame=` lines anywhere in the log. Twelve lines of
+log and no output file means permission, not a broken spec.
+
+### Tuning the captions against a real take
+
+A recording drops a `.mov.timeline.json` next to it listing the measured offset
+of every event. That is the only way to size captions correctly, because the
+windows are the gaps between events, not numbers you choose:
+
+```
+0.0s  start          12.4s  inventory_ready
+3.6s  pane:1         13.9s  pane:2 EXPOSURE     22.2s  report_ready
+```
+
+The current durations are cut to those gaps. Re-read the sidecar after changing
+`step_delay`, a role, or the report length, and re-cut. `validate` also warns
+when a caption's text is too long to *speak* in its window, which matters for
+`narrate` but not for burned subtitles.
+
 `dryrun` is the cheap loop and the one that matters for maintenance: `[verify]`
 expects the `report_ready` signal, which the exposure pane only emits after the
 report renders, so a dryrun fails if the pipeline breaks. Re-run it after any

@@ -33,4 +33,4 @@ while IFS= read -r line; do printf '%s\n' "$line"; sleep 0.12; done \
 
 printf '\n\033[1mexit code: %s\033[0m  (0 = full scan, 2 = degraded, 3 = no report)\n' "$rc"
 touch "${DEMO_RUNTIME_DIR:-/tmp}/report_ready"
-sleep 600
+sleep 6   # let the closing lines settle; [recording] hold keeps the camera on

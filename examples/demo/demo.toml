@@ -22,7 +22,7 @@ out = "exposure-report-demo-{stamp}.mov"
 crop = "auto"
 step_delay = 1.5
 gate_timeout = 90.0
-hold = 10.0          # keep rolling so the coverage footer and exit code land
+hold = 14.0          # room for the closing caption after report_ready (~22s in)
 keep = 3
 
 [layout]
@@ -46,32 +46,38 @@ gate_on = "inventory_ready"    # never show matching before there is an inventor
 signals = ["report_ready"]
 
 # --- Caption / narration track. Anchored to events, not wall-clock seconds, so
-# the wording can change without re-recording. The arc: what the tool is, what
-# discovery found, the finding itself, and then the honesty guarantees — which
-# are the actual product, not the red banner. ---
+# the wording can change without re-recording.
+#
+# Durations are sized to the gaps MEASURED in a real take (see the
+# .timeline.json sidecar a recording drops beside it):
+#
+#     0.0s  start              12.4s  inventory_ready
+#     3.6s  pane:1 DISCOVER    13.9s  pane:2 EXPOSURE    22.2s  report_ready
+#
+# so each caption fits the window it actually gets. An earlier draft anchored a
+# 14s caption to `inventory_ready`, which the next caption replaced after 1.6s,
+# and closed with a caption that ran past the end of the recording. Nothing but
+# a take reveals that — re-check the sidecar after changing pacing or a role.
+# Deliberately no caption on `pane:2 EXPOSURE`: it fires 1.6s after
+# `inventory_ready` and would just cut that line off.
 
 [[annotation]]
 on = "start"
-text = "Agentic AI tools reach developer machines faster than anyone can inventory them. This scan finds them, then asks if any is exposed right now."
-duration = 14.0
+text = "Agentic AI tools reach developer machines faster than anyone can inventory them. This scan finds them, then asks what is exposed."
+duration = 12.0
 
 [[annotation]]
 on = "inventory_ready"
-text = "Discovery ran locally and changed nothing: agent CLIs, the MCP servers they reach, local model runtimes, and the extensions loaded in."
-duration = 14.0
-
-[[annotation]]
-on = "pane:2  EXPOSURE"
-text = "Each installed version goes to OSV.dev, which evaluates affected ranges server side. KEV says what is exploited today. Feeds are replayed here."
-duration = 14.0
+text = "Discovery changed nothing. Each installed version now goes to OSV.dev for range evaluation."
+duration = 9.5
 
 [[annotation]]
 on = "report_ready"
-text = "One confirmed hit: an Ollama version OSV matched, corroborated by CISA KEV, so it is genuinely exploited in the wild. The report names the fix."
-duration = 14.0
+text = "One confirmed hit: OSV matched the installed Ollama, and CISA KEV says it is exploited in the wild."
+duration = 9.0
 
 [[annotation]]
 on = "report_ready"
-delay = 14.0
-text = "The second is possible, not confirmed: KEV carries no version data, and a patched install must never read as exploited. This report never says clean."
-duration = 16.0
+delay = 9.0
+text = "The report never says clean, and always lists what it cannot see."
+duration = 7.0
