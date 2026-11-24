@@ -173,7 +173,7 @@ gop collect --enterprise acme --out graph.json   # read-only token or GitHub App
 gop report  --graph graph.json --out report.html
 ```
 
-An **"AI agents in CI"** report section is coming (tracked in [gop issue #139](https://github.com/peleduri/gop/issues/139)). It marks each workflow that runs a known agent action or agent CLI, and shows who can trigger it (outsiders, members or maintainers), what it reaches (write token, secrets, `id-token: write`), whether untrusted text reaches its prompt, and which bypass flags or tool scopes it uses. It ranks outsider-triggerable agents with write access first, and lists the fixes from this part. Until it ships, gop's existing report already surfaces the moving refs, write-default orgs and cross-org reach that an agent workflow inherits. The planned docs will live at [docs/agents-in-ci.md](https://github.com/peleduri/gop/blob/main/docs/agents-in-ci.md) in the gop repo.
+gop's **"AI agents in CI"** report section ([docs](https://github.com/peleduri/gop/blob/main/docs/agents-in-ci.md)) marks each workflow that runs a known agent action or agent CLI, and shows who can trigger it (outsiders, members or maintainers), what it reaches (write token, secrets, `id-token: write`), whether untrusted text reaches its prompt, and which bypass flags or tool scopes it uses. It ranks outsider-triggerable agents with write access first, emits SARIF rule `GOP004`, and lists the fixes from this part. Build gop from `main` until the next release ships it.
 
 ## The Playbook
 
