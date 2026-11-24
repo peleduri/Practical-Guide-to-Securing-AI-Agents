@@ -1,7 +1,7 @@
 ---
 title: "Glossary"
 summary: "One-line definitions of the terms used across the ten parts, each pointing to the part where it is defined in full."
-updated: 2026-07-17
+updated: 2026-11-24
 ---
 
 # Glossary
@@ -14,6 +14,7 @@ Terms the guide leans on, defined once. The link points to the part where the te
 - **ACP (Agent Client Protocol)** — an open standard (Zed-originated, Apache-licensed; adopted by Zed, JetBrains, Neovim, OpenCode) for a client to drive a coding-agent harness, the way LSP standardized editor↔language-server. Originally editor→agent; with a headless client (e.g. acpx) the client is itself another agent, so it becomes agent→coding-agent — which removes the human who would answer an "ask" prompt. Secure the driven session with a deny-by-default machine gate (not `--dangerously-skip-permissions`), a scoped identity, and driver-attributed logging. → [Part 14](wiki/part-14-multi-agent-a2a.md)
 - **Agent allowlisting** — reducing the sprawl of installed AI agents to a small, explicit set of sanctioned ones and blocking or removing the rest; fewer runtimes to harden, smaller shadow-AI surface. → [Part 2](wiki/part-2-endpoint-hardening-and-policy-playbook.md)
 - **Agentic AI coding assistant** — an AI tool that does not just answer but *acts* on the developer's machine: runs commands, reads and writes files, makes network calls, and drives external tools. Its ability to act is its primary risk. → [Part 1](wiki/part-1-risk-surface-and-control-model.md)
+- **Agent in CI** — an AI coding agent run by a CI workflow (e.g. claude-code-action, codex-action, the Copilot coding agent, AI PR reviewers/fixers) with no human present. Its prompt is built from text outsiders write (PR titles, comments, diffs) and its identity is the workflow token, so keep the agent job read-only, put writes in a separate job, gate outsider triggers, pin to SHAs, and keep secrets and OIDC out of its reach. → [Part 15](wiki/part-15-agents-in-ci.md)
 - **Agentic workflow platform** — a platform (e.g. n8n, Gemini Enterprise) that wires agentic automations into enterprise data and systems via triggers, connectors, and sometimes arbitrary code. → [Part 7](wiki/part-7-agentic-workflow-platforms.md)
 - **Agent forensics** — preserving the full context of an agent incident — prompts, tool I/O, guardrail decisions, retrieval bundles, memory and sandbox snapshots — tamper-evidently, because action logs alone cannot reconstruct what happened. → [Part 9](wiki/part-9-detection-monitoring-ir.md)
 - **AI / agent registry (intake)** — a governed inventory (the discovery of Part 1 turned into a system of record) of every agent, workflow, Work-AI connection, and model, each with an owner, purpose, risk tier, and decommission date; what you govern and audit against. → [Part 12](wiki/part-12-governance-compliance.md)
@@ -91,6 +92,7 @@ Terms the guide leans on, defined once. The link points to the part where the te
 - **PreToolUse hook** — a script the agent invokes before every tool call that returns allow / ask / block; the concrete endpoint enforcement primitive (Part 2 ships a real, de-identified one that guards GitHub Enterprise admin). → [Part 2](wiki/part-2-endpoint-hardening-and-policy-playbook.md)
 - **Prompt-submit / pre-tool / post-tool interception** — the three enforcement surfaces: reviewing the instruction before the LLM sees it, checking a tool call before it runs, and inspecting a tool response before the agent consumes it. → [Part 1](wiki/part-1-risk-surface-and-control-model.md), [Part 2](wiki/part-2-endpoint-hardening-and-policy-playbook.md)
 - **Prompt infection (cross-agent injection)** — in a multi-agent system, an injected instruction propagates from one agent's context into the next through normal inter-agent messages, and gets *laundered* into a cleaner, more trusted-looking form as intermediate agents reformat it. Peer output is trusted more than external input, which is the vulnerability; re-screen every inter-agent message. → [Part 14](wiki/part-14-multi-agent-a2a.md)
+- **`pull_request_target` / outsider-triggerable event** — a GitHub Actions trigger (`pull_request_target`, `issue_comment`, `issues`, `discussion`, fork-following `workflow_run`) that runs in the base repository's context, with its secrets and a possibly write-capable token, but can be set off by anyone who can open a PR or comment. Never run an agent on one without an author gate. → [Part 15](wiki/part-15-agents-in-ci.md)
 
 ## R
 
@@ -100,6 +102,7 @@ Terms the guide leans on, defined once. The link points to the part where the te
 
 - **Sandbox (OS-level)** — enforcing an operating-system sandbox (macOS Seatbelt, Linux Landlock + seccomp) so agent commands cannot opt out of the confinement. → [Part 2](wiki/part-2-endpoint-hardening-and-policy-playbook.md)
 - **Self-hosted sandbox / environment worker** — running the agent's execution environment on infrastructure you control, which becomes the lever for applying your own security controls to agent compute. → [Part 4](wiki/part-4-beyond-the-hyperscalers.md)
+- **SHA pinning (actions)** — referencing a CI action by its full commit SHA instead of a moving tag or branch (`@v1`, `@main`), so a hijacked tag cannot change what runs; only effective when nested composite actions are pinned too. → [Part 15](wiki/part-15-agents-in-ci.md), [Part 6](wiki/part-6-extension-supply-chain.md)
 - **Shadow AI** — unsanctioned agents, tool servers, and AI chatbots proliferating faster than security can inventory them; the reason discovery comes first. → [Part 1](wiki/part-1-risk-surface-and-control-model.md)
 - **Shared responsibility (for agents)** — a managed AI platform splits each control into a half it runs (isolation, token vault, audit plane) and a half you keep (tool exposure, identity scope, isolation toggles, log wiring, the still-promptable model, provenance). "Managed" is not "done"; register who owns which half. → [Part 13](wiki/part-13-managed-cloud-ai-stack.md)
 

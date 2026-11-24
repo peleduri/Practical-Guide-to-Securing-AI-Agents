@@ -112,7 +112,7 @@ Read the rules it lives by before summarizing its output to the reader:
 
 For each control, decide **present / partial / missing** from what Step 1 found. These
 are the guide's first five controls (the ones that break the core attack path), plus
-the headless gate:
+the headless gate and agents in CI:
 
 | # | Control | Present means | Guide |
 |---|---------|---------------|-------|
@@ -122,6 +122,7 @@ the headless gate:
 | 4 | **MCP allowlist + credential-path blocking** | deny-by-default on tool servers; agent blocked from reading credential files/stores | Part 2 |
 | 5 | **Actions streamed to SIEM + a pre-built kill switch** | agent tool calls logged as the causal chain; a tested kill switch exists | Part 9 |
 | + | **Headless permission gate** | any agent-driven / CI run resolves "ask" to a deny-by-default machine policy, never a bypass flag | Part 14 |
+| + | **Agents in CI** | every CI agent workflow is inventoried; none runs on an outsider-triggerable event without an author gate; the agent job is read-only with writes in a separate job; actions SHA-pinned; scoped tools, no bypass flags; no secrets / `id-token: write` in the agent job | Part 15 |
 
 Score each control from a **concrete, deterministic probe — not a judgment call** — so
 the same machine always yields the same score (a score that flaps is worthless, and a CI
@@ -153,6 +154,13 @@ treat them differently:
     (application control / MDM)?
   - *SIEM streaming + kill switch* — are agent events reaching the SIEM, and is a kill switch
     staged and tested?
+  - *Agents in CI* — is every agent workflow across the org's repos inventoried (e.g. with
+    gop, `https://github.com/peleduri/gop`), and does each meet the Part 15 controls? This
+    endpoint skill cannot see the org's CI. If the working directory is a repo, you may read
+    (read-only) its `.github/workflows/*.yml` and flag local findings (agent action or CLI on
+    `pull_request_target` / `issue_comment` without an author gate, write permissions or
+    `id-token: write` in the agent job, an unpinned agent action, bypass flags). One clean
+    repo is at most `partial`; `present` needs the org-wide inventory.
 
 Set `"attested": true` on each attested control in the posture JSON so the scorecard tags it
 **self-reported** — a reader must be able to tell a measured status from one taken on trust.
@@ -160,20 +168,23 @@ Never present an attested answer as if it were a probe result.
 
 Roll up to maturity by a fixed threshold: **run** = 0 missing and ≤1 partial; **walk** =
 ≤2 missing; **crawl** = otherwise. Rank the gaps by guide order (discovery → baseline →
-allowlist → MCP+creds → SIEM/kill-switch → headless), which is also roughly blast-radius
+allowlist → MCP+creds → SIEM/kill-switch → headless → agents-in-CI), which is also roughly blast-radius
 order.
 
 Then place the org on the maturity model (definitions:
 `https://raw.githubusercontent.com/peleduri/Practical-Guide-to-Securing-AI-Agents/main/start-here.md`):
 
 - **Crawl** — discovery done, a managed baseline on the top agents, an MCP allowlist,
-  agent events reaching the SIEM. You can see the surface.
+  agent events reaching the SIEM; CI agent workflows inventoried, SHA-pinned, and none on an
+  outsider-triggerable event without an author gate. You can see the surface.
 - **Walk** — real-time enforcement at the endpoint (pre-tool gating, credential-path
   blocking), the agent allowlist enforced, extension provenance/pinning, DSPM before
-  any Work-AI corpus.
+  any Work-AI corpus; CI agent jobs read-only with writes in a separate job, scoped tools,
+  no secrets or OIDC in the agent job.
 - **Run** — per-agent scoped identity with JIT/task-scoped access, agent behavioral
   detections + a tested kill switch + forensics, workflows shipped as code with an AI
-  review gate.
+  review gate; CI agents on pinned OIDC trust, ephemeral egress-limited runners, and a
+  continuous enterprise scan.
 
 Most orgs are at crawl and think they are at walk. Score honestly.
 
@@ -184,7 +195,8 @@ Produce a short posture report:
 - **Maturity: crawl / walk / run** — with the one-line reason.
 - **Per-control table** — present / partial / missing, from Step 2.
 - **The single highest-value next control** — the earliest missing control in guide
-  order (discovery → baseline → allowlist → MCP+creds → SIEM/kill-switch → headless).
+  order (discovery → baseline → allowlist → MCP+creds → SIEM/kill-switch → headless →
+  agents-in-CI).
 - **Each gap → the control that fixes it** — name the control, its part, and its
   template (from the Catalog). This is the reader's ranked to-do list.
 
@@ -197,7 +209,7 @@ run the bundled generator:
 
     { "maturity": "crawl|walk|run",
       "controls": [ { "label": "Discovery inventory", "status": "present|partial|missing",
-                      "attested": true }, ... ],   // set "attested": true on the 3 asked controls
+                      "attested": true }, ... ],   // set "attested": true on the 4 asked controls
       "next_control": "Push a managed baseline users can't loosen",
       "date": "YYYY-MM-DD" }
 
@@ -252,6 +264,7 @@ Base: `https://raw.githubusercontent.com/peleduri/Practical-Guide-to-Securing-AI
 | Credential broker pattern | run | Part 10 | `identity/credential-broker.md` |
 | Fail-safe kill switch | walk | Part 9 | `incident/agent-kill-switch.sh` |
 | Workflow pre-publish review gate | run | Part 7 | `workflows/ai-security-review-gate.md` |
+| Hardened AI-agent CI workflow (read-only agent job + separate write job) | crawl → walk | Part 15 | `workflows/agent-ci-hardened.yml` |
 
 Read `templates/README.md` at the base for each file's contract and honest limits
 before installing it.

@@ -1,7 +1,7 @@
 ---
 title: "Start Here — How to Use This Wiki"
 summary: "The on-ramp: pick your reader track, do the first five controls in order, and place yourself on a crawl / walk / run maturity model before diving into the parts."
-updated: 2026-07-17
+updated: 2026-11-24
 ---
 
 # Start Here
@@ -42,6 +42,12 @@ Place your program honestly. Most organizations are at crawl and think they are 
 **Walk — enforce at the endpoint.** Real-time enforcement gating high-impact actions (shell, filesystem edits) at prompt-submit / pre-tool / post-tool; credential-path blocking; the sanctioned-agent allowlist enforced with application control; extension supply-chain provenance and pinning ([Part 6](wiki/part-6-extension-supply-chain.md)); DSPM run *before* you connect a Work AI corpus ([Part 8](wiki/part-8-work-ai-and-dspm.md)). You now stop the common attack paths, not just watch them.
 
 **Run — govern identity and autonomy.** Each agent has its own delegated identity with just-in-time, task-scoped access and no standing privilege ([Part 10](wiki/part-10-agent-identity.md)); agent behavioral detections, a tested fail-safe kill switch, and forensics ([Part 9](wiki/part-9-detection-monitoring-ir.md)); workflow platforms shipped as code with an AI security-review gate ([Part 7](wiki/part-7-agentic-workflow-platforms.md)); and, if you go there, a context-graph SOC governed by this same guide. Autonomy is now safe to widen.
+
+**Per-surface rows.** Some surfaces need their own row, because the stage-wide description above does not say what crawl, walk and run mean there.
+
+| Surface | Crawl | Walk | Run |
+|---------|-------|------|-----|
+| **Agents in CI** ([Part 15](wiki/part-15-agents-in-ci.md)) | Every agent workflow across your orgs is inventoried with an owner (e.g. with [gop](https://github.com/peleduri/gop)); no agent runs on an outsider-triggerable event without an author gate; agent actions are pinned to full SHAs. | The agent job is read-only and writes happen in a separate job; tools are scoped, with no bypass flags; fork PRs need maintainer approval; no secrets or `id-token: write` in the agent job. | Model and cloud access goes through OIDC trust pinned to repo, ref and workflow (no static keys); agent runners are ephemeral and egress-limited; agent-run detections and an org-wide disable switch are tested; a continuous enterprise scan blocks new exposed agent workflows. |
 
 ## How this wiki is organized
 

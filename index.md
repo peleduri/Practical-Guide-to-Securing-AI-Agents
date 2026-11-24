@@ -24,6 +24,7 @@ Below is the full catalog, grouped into a reading arc. Part numbers are stable i
 - [Part 6 — The Agent Extension Supply Chain](wiki/part-6-extension-supply-chain.md) — governing skills, plugins, commands, hooks, and subagents as a software supply chain loaded into the agent.
 - [Part 7 — Agentic Workflow Platforms (n8n, Gemini Enterprise)](wiki/part-7-agentic-workflow-platforms.md) — securing platforms where agentic workflows are wired into enterprise data; the SaaS-vs-self-hosted decision, the connector layer, and shipping workflows as code with an AI security-review gate.
 - [Part 8 — Enterprise Work AI and the DSPM Prerequisite (Glean and peers)](wiki/part-8-work-ai-and-dspm.md) — why permission-aware Work AI is dangerous because it mirrors overshared permissions, and why DSPM (what sensitive data exists + who can reach it) is the non-optional companion.
+- [Part 15 — AI Coding Agents in CI (GitHub Actions)](wiki/part-15-agents-in-ci.md) — claude-code-action, the Codex action/CLI, the Copilot coding agent, and AI PR reviewers/fixers: untrusted PR/issue text in the prompt, outsider-triggerable events, write tokens / secrets / OIDC, moving refs and bypass flags; copy-ready workflow controls, detection, and finding every agent workflow enterprise-wide with gop.
 
 ### Operations and identity — the cross-cutting spine
 
@@ -90,6 +91,8 @@ One-line pointers to the part that defines each. For the definitions themselves,
 - Multi-agent topology (orchestrator/sub-agent, A2A peers); secure the graph not the node → Part 14
 - Prompt infection (injection self-replicates + laundered) and cross-agent confused deputy → Part 14
 - The orchestration framework (LangChain/LangGraph) as attack surface → Part 14
+- AI agents in CI: untrusted text in the prompt + outsider-triggerable events + write token/secrets/OIDC → Part 15
+- Read-only agent job + separate write job; author-gated triggers; SHA-pinned agent actions → Part 15
 
 ## Sources
 

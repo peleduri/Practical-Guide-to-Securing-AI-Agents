@@ -10,6 +10,7 @@
     { "label": "SIEM streaming of agent logs",               "status": "partial",  "attested": true  },
     { "label": "Just-in-time, task-scoped identity",         "status": "missing",  "attested": false },
     { "label": "Headless permission gate",                   "status": "missing",  "attested": false },
-    { "label": "Fail-safe agent kill switch",                "status": "present",  "attested": false }
+    { "label": "Fail-safe agent kill switch",                "status": "present",  "attested": false },
+    { "label": "Agents in CI (Part 15)",                     "status": "partial",  "attested": true  }
   ]
 }

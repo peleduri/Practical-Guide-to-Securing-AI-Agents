@@ -61,7 +61,8 @@ jq -n --arg b "$bstat" --arg m "$maturity" --arg d "$(date +%F)" '{
     { label: "Sanctioned-agent allowlist",                 status: "missing" },
     { label: "MCP server allowlist",                       status: "missing" },
     { label: "SIEM streaming of agent logs",               status: "missing" },
-    { label: "Headless permission gate",                   status: "missing" }
+    { label: "Headless permission gate",                   status: "missing" },
+    { label: "Agents in CI (Part 15)",                     status: "missing" }
   ]
 }' > "$posture"
 

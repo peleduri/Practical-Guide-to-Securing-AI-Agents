@@ -10,7 +10,7 @@ The full catalog is [`index.md`](index.md); term definitions are in [`glossary.m
 
 ## Run it — get your posture scorecard
 
-You don't have to read all 14 parts to start. Point your coding agent at this guide and **run the assessment**: it discovers the AI agents and MCP servers on a machine, scores your posture on a **crawl / walk / run** maturity model, and writes a shareable scorecard. Assess is **read-only**; hardening is opt-in and previewed before anything is written.
+You don't have to read all 15 parts to start. Point your coding agent at this guide and **run the assessment**: it discovers the AI agents and MCP servers on a machine, scores your posture on a **crawl / walk / run** maturity model, and writes a shareable scorecard. Assess is **read-only**; hardening is opt-in and previewed before anything is written.
 
 **[→ See an example scorecard](https://peleduri.github.io/Practical-Guide-to-Securing-AI-Agents/examples/scorecard.html)** — synthetic data, but it's exactly what you get back.
 
@@ -29,7 +29,7 @@ Two ways to run, both read-only:
 
 **Share your result.** The scorecard prints a copy-ready maturity badge for your own README — e.g. ![agent security: walk](https://img.shields.io/badge/agent%20security-walk-c2410c) — so your posture links back here.
 
-The 14-part guide below is the **why** behind every control the assessment checks.
+The 15-part guide below is the **why** behind every control the assessment checks.
 
 ## What this is — and what it isn't
 
@@ -69,6 +69,10 @@ The parts are grouped below into a reading arc. Part numbers are stable identifi
 - **[Part 6 — The Agent Extension Supply Chain](wiki/part-6-extension-supply-chain.md)** — governing the skills, plugins, commands, hooks, and subagents you load into an agent as a reviewed software supply chain, not a convenience.
 - **[Part 7 — Agentic Workflow Platforms (n8n, Gemini Enterprise)](wiki/part-7-agentic-workflow-platforms.md)** — securing the automation and agent platforms wired into enterprise data: the SaaS-vs-self-hosted (and license-tier) decision, arbitrary-code and connector risk, trigger-point governance (a Jira comment or Slack message is an indirect-injection path even when the webhook is authenticated), the credential concentration, and shipping workflows as code (GitOps + AI security-review gate) with external secrets and the AI gateway for model calls (with concrete AI-gateway examples — LiteLLM, Kong AI Gateway).
 - **[Part 8 — Enterprise Work AI and the DSPM Prerequisite (Glean and peers)](wiki/part-8-work-ai-and-dspm.md)** — why a permission-aware Work AI platform is dangerous precisely because it faithfully mirrors overshared permissions, and why DSPM is the non-optional companion for knowing what sensitive data exists and who can reach it.
+
+- **[Part 15 — AI Coding Agents in CI (GitHub Actions)](wiki/part-15-agents-in-ci.md)** — claude-code-action, the Codex action and CLI, the Copilot coding agent, and AI PR reviewers and fixers: a headless agent whose prompt is written by strangers, triggered by events outsiders can cause, holding write tokens, secrets and OIDC trust. Copy-ready controls (author-gated triggers, read-only agent job plus a separate write job, SHA pins, scoped tools, no secrets on untrusted triggers, tight OIDC trust), a [hardened workflow template](templates/workflows/agent-ci-hardened.yml), and detection.
+
+  **Pairs with gop.** Part 15 is the *why* and the per-workflow fix; [gop](https://github.com/peleduri/gop) is the open-source, read-only CLI that finds every agent workflow across a GitHub Enterprise (`gop collect` + `gop report`) and ranks who can trigger it and what it reaches. Its "AI agents in CI" report section is in progress.
 
 **Operations and identity — the cross-cutting spine.**
 
