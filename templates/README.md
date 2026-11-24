@@ -30,6 +30,7 @@ and the kill switch.
 | `identity/cross-account-role-trust.json` | AWS role trust done right (specific principal + ExternalId) | [10](../wiki/part-10-agent-identity.md) |
 | `identity/credential-broker.md` | The credential boundary: agent holds no provider secrets, a broker does | [10](../wiki/part-10-agent-identity.md) |
 | `workflows/ai-security-review-gate.md` | The pre-publish review-gate checklist for agentic workflows | [7](../wiki/part-7-agentic-workflow-platforms.md) |
+| `workflows/agent-ci-hardened.yml` | Hardened AI-agent PR review workflow: read-only agent job, separate write job, SHA pins, scoped tools, no OIDC in the agent job (`actionlint`-clean) | [15](../wiki/part-15-agents-in-ci.md) |
 
 ## How to use it
 
@@ -50,6 +51,10 @@ and the kill switch.
 - **Headless gate** — register `headless/permission-gate.sh` as the driven agent's PreToolUse
   hook for any headless / agent-driven run (acpx, CI, orchestrator). It denies by default,
   collapses "ask" to deny, and fails closed. See `headless/README.md`.
+- **Agents in CI** — copy `workflows/agent-ci-hardened.yml` to `.github/workflows/`, re-pin every
+  SHA yourself, swap in your secret name, and verify each action input against the vendor docs.
+  To find the agent workflows you have not hardened yet, scan the enterprise with
+  [gop](https://github.com/peleduri/gop) (Part 15).
 
 New here? Start at [`../start-here.md`](../start-here.md). Everything in this tree is under
 the licenses in [`../LICENSE-CODE`](../LICENSE-CODE) (code) and [`../LICENSE`](../LICENSE) (docs).
