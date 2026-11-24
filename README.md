@@ -72,7 +72,7 @@ The parts are grouped below into a reading arc. Part numbers are stable identifi
 
 - **[Part 15 — AI Coding Agents in CI (GitHub Actions)](wiki/part-15-agents-in-ci.md)** — claude-code-action, the Codex action and CLI, the Copilot coding agent, and AI PR reviewers and fixers: a headless agent whose prompt is written by strangers, triggered by events outsiders can cause, holding write tokens, secrets and OIDC trust. Copy-ready controls (author-gated triggers, read-only agent job plus a separate write job, SHA pins, scoped tools, no secrets on untrusted triggers, tight OIDC trust), a [hardened workflow template](templates/workflows/agent-ci-hardened.yml), and detection.
 
-  **Pairs with gop.** Part 15 is the *why* and the per-workflow fix; [gop](https://github.com/peleduri/gop) is the open-source, read-only CLI that finds every agent workflow across a GitHub Enterprise (`gop collect` + `gop report`) and ranks who can trigger it and what it reaches. Its "AI agents in CI" report section is in progress.
+  **Pairs with gop.** Part 15 is the *why* and the per-workflow fix; [gop](https://github.com/peleduri/gop) is the open-source, read-only CLI that finds every agent workflow across a GitHub Enterprise (`gop collect` + `gop report`) and ranks who can trigger it and what it reaches. Its "AI agents in CI" report section ([docs](https://github.com/peleduri/gop/blob/main/docs/agents-in-ci.md)) ships on main and in the next release.
 
 **Operations and identity — the cross-cutting spine.**
 
